@@ -13,11 +13,18 @@ fps = 60
 timer = pygame.time.Clock()
 font = pygame.font.Font('freesansbold.ttf',20)
 level = boards
-color = 'brown'
+color = '#007FFF'
 PI = math.pi
 player_image =[]
 for i in range(1,5):
     player_image.append(pygame.transform.scale(pygame.image.load(f'Player_image/{i}.png'),(38,38)))
+Red_img = pygame.transform.scale(pygame.image.load(f'Ghost_image/red.png'),(50,50))
+Green_img = pygame.transform.scale(pygame.image.load(f'Ghost_image/Green.png'),(50,50))
+Pink_img = pygame.transform.scale(pygame.image.load(f'Ghost_image/Pink.png'),(50,50))
+brown_img = pygame.transform.scale(pygame.image.load(f'Ghost_image/brown.png'),(50,50))
+Power_img = pygame.transform.scale(pygame.image.load(f'Ghost_image/PowerAngle.png'),(50,50))
+dead_img = pygame.transform.scale(pygame.image.load(f'Ghost_image/dead.png'),(50,50))
+
 
 player_x = 375
 player_y = 520
@@ -35,6 +42,78 @@ eaten_ghost = [False,False,False,False]
 moving = False
 startup_counter = 0
 Lives = 3
+
+#Ghost
+Red_x = 40
+Red_y = 56
+Red_direction = 0
+
+Green_x = 325
+Green_y = 325
+Green_direction = 2
+
+Pink_x = 375
+Pink_y = 320
+Pink_direction = 2
+
+brown_x = 410
+brown_y = 310
+brown_direction = 0
+
+targets = [(player_x,player_y),(player_x,player_y),(player_x,player_y),(player_x,player_y)]
+
+Red_dead = False
+Green_dead = False
+Pink_dead = False
+brown_dead = False
+
+Red_box = False
+Green_box = False
+Pink_box = False
+brown_box = False
+
+ghost_speed = 2
+
+
+
+
+class Gohst:
+    def __init__(self,x_coord,y_coord,target,speed,img,direct,dead,box,id):
+        self.x_pos = x_coord
+        self.y_pos = y_coord
+        self.center_x = self.x_pos +22
+        self.center_y = self.y_pos + 22
+        self.target = target
+        self.speed = speed
+        self.in_box = box
+        self.direction = direct
+        self.dead = dead
+        self.img = img
+        self.id = id
+        self.turns,self.in_box = self.check_collisions()
+        self.rect = self.draw()
+
+    def draw(self):
+        if (not powerup and not self.dead) or (eaten_ghost[self.id] and powerup and not self.dead):
+            screen.blit(self.img,(self.x_pos,self.y_pos))
+        elif powerup and not self.dead and not eaten_ghost[self.id]:
+            screen.blit(Power_img,(self.x_pos,self.y_pos))
+        else:
+            screen.blit(dead_img,(self.x_pos,self.y_pos))
+            ghost_rect = pygame.rect.Rect((self.center_x - 18,self.center_y - 18),(36,36))
+            return ghost_rect
+
+
+
+    def check_collisions(self):
+        self.turns = [False,False,False,False]
+        self.in_box = True
+        return  self.turns,self.in_box
+
+
+
+
+
 
 
 #Building a display
@@ -170,7 +249,7 @@ def draw_score():
     screen.blit(  score_text, (10, 730))
     screen.blit(score_value_text, (80, 730))
     if powerup:
-        pygame.draw.circle(screen,'Red',(150,740),15)
+        pygame.draw.circle(screen,'#007FFF',(150,740),15)
     for i in range(Lives):
         screen.blit(pygame.transform.scale(player_image[0],(30,30)),(620+i*40,730))
 
@@ -200,6 +279,14 @@ while run:
     screen.fill('black')
     draw_board()
     draw_player()
+    #Ghost
+    Red = Gohst(Red_x,Red_y,targets[0],ghost_speed,Red_img,Red_direction,Red_dead,Red_box,0)
+    Green = Gohst(Green_x,Green_y,targets[1],ghost_speed,Green_img,Green_direction,Green_dead,Green_box,1)
+    Pink = Gohst(Pink_x,Pink_y,targets[2],ghost_speed,Pink_img,Pink_direction,Pink_dead,Pink_box,2)
+    brown = Gohst(brown_x,brown_y,targets[3],ghost_speed,brown_img,brown_direction,brown_dead,brown_box,3)
+
+
+
     draw_score()
     center_x = player_x +28
     center_y = player_y +24
